@@ -212,7 +212,7 @@ const extractUrls = t => [...new Set((t.match(/https?:\/\/[^\s"'<>)\],]+/g)||[])
 const buildLikedContext = liked => !liked.length ? "" :
   `\n\nEXAMPLES PREVIOUSLY APPROVED — study what makes these work:\n${liked.map((l,i)=>`${i+1}. HEADLINE: ${l.headline_line1} / ${l.headline_line2}\n   STANDFIRST: ${l.standfirst}\n   NOTE: ${l.note||"approved overall"}`).join("\n")}`;
 
-async function callClaude(system, userMsg, maxTokens=1600) {
+async function callClaude(system, userMsg, maxTokens=2400) {
   const r = await fetch("/.netlify/functions/claude", {
     method:"POST", headers:{"Content-Type":"application/json"},
     body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:maxTokens, system, messages:[{role:"user",content:userMsg}] }),
@@ -499,7 +499,7 @@ SELF-CHECK before outputting:
 
 Return ONLY raw JSON with ALL fields. No markdown.`;
     try {
-      const raw = await callClaude(SYSTEM_PROMPT,prompt);
+      const raw = await callClaude(SYSTEM_PROMPT,prompt,2400);
       const parsed = parseJSON(raw);
       setCopy(parsed);
       if (isHl) setHlHistory(prev=>[...new Set([...prev,`${parsed.headline_line1} / ${parsed.headline_line2}`])].slice(-5));
