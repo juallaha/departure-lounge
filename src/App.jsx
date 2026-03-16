@@ -475,17 +475,27 @@ ${hlCtx}${likedCtx}${check}`;
     if (!copy||!brief.trim()) return;
     setPartialLoad(sectionKey);
     const isHl = sectionKey.includes("headline");
-    const prompt=`TARGETED REVISION. Brand: ${brand} | Type: ${adType.toUpperCase()}
+    const phone = extractPhone(brief) || "see brief";
+    const likedCtx = liked.length ? `\n\nAPPROVED EXAMPLES — match this quality and wit:\n${liked.map((l,i)=>`${i+1}. ${l.headline_line1} / ${l.headline_line2} — ${l.standfirst}`).join("\n")}` : "";
+    const prompt=`TARGETED REVISION. Brand: ${brand} | Phone: ${phone} | URL: ${BRAND_URL[brand]} | Type: ${adType.toUpperCase()}
 
-Rewrite ONLY: ${sectionKey}. Consider full article context. Preserve all other fields verbatim.
+Rewrite ONLY the field(s) specified below. Copy ALL other fields VERBATIM — do not change anything else.
 
 INSTRUCTION: ${instruction}
 
-FULL CURRENT ARTICLE:
+FULL CURRENT ARTICLE (copy unrequested fields verbatim):
 ${JSON.stringify(copy,null,2)}
 
-BRIEF (context): ${brief}
-${isHl?`\nPREVIOUSLY GENERATED HEADLINES (do not repeat): ${hlHistory.join("; ")}`:""}
+ORIGINAL BRIEF (use this to keep the rewrite specific and grounded in THIS property):
+${brief}
+${urlContent ? `\nFETCHED PAGE CONTENT:\n${urlContent}` : ""}
+${isHl?`\nPREVIOUSLY GENERATED HEADLINES (do not repeat any): ${hlHistory.join("; ")}`:""}${likedCtx}
+
+SELF-CHECK before outputting:
+☑ Only the requested field(s) have changed — everything else is verbatim
+☑ Rewrite is specific to THIS brief and property — not generic travel-ad language
+☑ No "stunning", "breathtaking", "paradise", "perfect getaway" or similar filler
+☑ En dash (–) with spaces — NEVER em dash (—)
 
 Return ONLY raw JSON with ALL fields. No markdown.`;
     try {
@@ -673,7 +683,7 @@ Return ONLY raw JSON with ALL fields. No markdown.`;
                   </>
                 }
                 <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginBottom:"14px"}}>
-                  <SmBtn label="↺ headline" loading={partialLoad==="headline"} onClick={()=>regenSection("headline","Rewrite headline_line1 and headline_line2 only. Completely different pun or wordplay concept from current. Two lines that feel made for each other.")} />
+                  <SmBtn label="↺ headline" loading={partialLoad==="headline"} onClick={()=>regenSection("headline","Rewrite headline_line1 and headline_line2 only. Must be a completely different pun or wordplay concept. Two short lines that feel made for each other. Must be specific to THIS destination and property — study the brief carefully. No generic travel headlines.")} />
                 </div>
 
                 {/* Standfirst */}
